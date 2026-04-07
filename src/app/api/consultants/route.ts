@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { turkishUpperCase } from '@/lib/turkish';
 
 function isAdmin(request: NextRequest): boolean {
   const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -48,8 +49,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Ad soyad ve cinsiyet gerekli' }, { status: 400 });
     }
 
-    const upperName = name.toLocaleUpperCase('tr-TR').trim();
-    const upperGender = gender.toLocaleUpperCase('tr-TR').trim();
+    const upperName = turkishUpperCase(name).trim();
+    const upperGender = turkishUpperCase(gender).trim();
 
     if (upperGender !== 'ERKEK' && upperGender !== 'KADIN') {
       return NextResponse.json({ error: 'Cinsiyet ERKEK veya KADIN olmalı' }, { status: 400 });

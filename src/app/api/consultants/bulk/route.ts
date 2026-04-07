@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { turkishUpperCase } from '@/lib/turkish';
 
 export async function POST(request: NextRequest) {
   const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -24,8 +25,8 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      const name = parts[0].toLocaleUpperCase('tr-TR').trim();
-      const gender = parts[1].toLocaleUpperCase('tr-TR').trim();
+      const name = turkishUpperCase(parts[0]).trim();
+      const gender = turkishUpperCase(parts[1]).trim();
 
       if (gender !== 'ERKEK' && gender !== 'KADIN') {
         errors.push(`Geçersiz cinsiyet: ${line}`);

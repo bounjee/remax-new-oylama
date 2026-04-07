@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { turkishUpperCase } from '@/lib/turkish';
 
 export async function GET(request: NextRequest) {
   const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify voter is a registered consultant
-    const upperVoter = voter_name.toLocaleUpperCase('tr-TR').trim();
+    const upperVoter = turkishUpperCase(voter_name).trim();
     const consultant = await sql`SELECT id FROM consultants WHERE name = ${upperVoter}`;
     if (consultant.rows.length === 0) {
       return NextResponse.json({ error: 'Kayıtlı danışman bulunamadı. Lütfen ad soyadınızı kontrol edin.' }, { status: 404 });

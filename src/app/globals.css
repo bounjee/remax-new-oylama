@@ -1,17 +1,5 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-remax-blue: #003DA5;
-  --color-remax-red: #DC2626;
-  --color-remax-dark: #00205B;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #e8edf3;

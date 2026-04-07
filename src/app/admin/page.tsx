@@ -19,6 +19,11 @@ interface Vote {
 
 type Tab = 'dashboard' | 'consultants' | 'bulk' | 'votes' | 'results';
 
+const card: React.CSSProperties = { background: '#fff', borderRadius: '16px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', overflow: 'hidden', borderTop: '4px solid #DC2626' };
+const input: React.CSSProperties = { width: '100%', padding: '12px 16px', border: '2px solid #E5E7EB', borderRadius: '12px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const };
+const btnBlue: React.CSSProperties = { width: '100%', padding: '14px', background: '#003DA5', color: '#fff', fontWeight: 700, fontSize: '14px', letterSpacing: '0.05em', borderRadius: '12px', border: 'none', cursor: 'pointer' };
+const badge: React.CSSProperties = { display: 'inline-block', padding: '6px 16px', background: '#FEF9C3', color: '#003DA5', fontSize: '11px', fontWeight: 700, letterSpacing: '0.2em', borderRadius: '20px', border: '1px solid #FDE68A' };
+
 export default function AdminPanel() {
   const [token, setToken] = useState('');
   const [password, setPassword] = useState('');
@@ -116,112 +121,68 @@ export default function AdminPanel() {
   const resetVotes = async () => {
     if (!confirm('Tüm oyları sıfırlamak istediğinize emin misiniz?')) return;
     const res = await fetch('/api/votes/reset', { method: 'POST', headers: headers() });
-    if (res.ok) {
-      flash('Tüm oylar sıfırlandı');
-      fetchAll();
-    } else {
-      flash('Oylar sıfırlanamadı', true);
-    }
+    if (res.ok) { flash('Tüm oylar sıfırlandı'); fetchAll(); }
+    else flash('Oylar sıfırlanamadı', true);
   };
 
   const addConsultant = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
     const res = await fetch('/api/consultants', {
-      method: 'POST',
-      headers: headers(),
+      method: 'POST', headers: headers(),
       body: JSON.stringify({ name: newName, gender: newGender }),
     });
     const data = await res.json();
-    if (res.ok) {
-      flash(`${newName.toUpperCase()} eklendi`);
-      setNewName('');
-      fetchAll();
-    } else {
-      flash(data.error || 'Eklenemedi', true);
-    }
+    if (res.ok) { flash(`${newName.toUpperCase()} eklendi`); setNewName(''); fetchAll(); }
+    else flash(data.error || 'Eklenemedi', true);
   };
 
   const deleteConsultant = async (id: number, name: string) => {
     if (!confirm(`${name} silinecek. Emin misiniz?`)) return;
     const res = await fetch('/api/consultants', {
-      method: 'DELETE',
-      headers: headers(),
+      method: 'DELETE', headers: headers(),
       body: JSON.stringify({ id }),
     });
-    if (res.ok) {
-      flash(`${name} silindi`);
-      fetchAll();
-    } else {
-      flash('Silinemedi', true);
-    }
+    if (res.ok) { flash(`${name} silindi`); fetchAll(); }
+    else flash('Silinemedi', true);
   };
 
   const handleBulkAdd = async () => {
     if (!bulkData.trim()) return;
     const res = await fetch('/api/consultants/bulk', {
-      method: 'POST',
-      headers: headers(),
+      method: 'POST', headers: headers(),
       body: JSON.stringify({ data: bulkData }),
     });
     const data = await res.json();
-    if (res.ok) {
-      flash(`${data.added} danışman eklendi, ${data.skipped} atlandı`);
-      if (data.added > 0) setBulkData('');
-      fetchAll();
-    } else {
-      flash(data.error || 'Toplu ekleme hatası', true);
-    }
+    if (res.ok) { flash(`${data.added} danışman eklendi, ${data.skipped} atlandı`); if (data.added > 0) setBulkData(''); fetchAll(); }
+    else flash(data.error || 'Toplu ekleme hatası', true);
   };
 
-  // Results calculation
-  const maleResults = consultants
-    .filter(c => c.gender === 'ERKEK')
-    .map(c => ({
-      ...c,
-      voteCount: votes.filter(v => v.male_vote_name === c.name).length,
-    }))
+  const maleResults = consultants.filter(c => c.gender === 'ERKEK')
+    .map(c => ({ ...c, voteCount: votes.filter(v => v.male_vote_name === c.name).length }))
     .sort((a, b) => b.voteCount - a.voteCount);
 
-  const femaleResults = consultants
-    .filter(c => c.gender === 'KADIN')
-    .map(c => ({
-      ...c,
-      voteCount: votes.filter(v => v.female_vote_name === c.name).length,
-    }))
+  const femaleResults = consultants.filter(c => c.gender === 'KADIN')
+    .map(c => ({ ...c, voteCount: votes.filter(v => v.female_vote_name === c.name).length }))
     .sort((a, b) => b.voteCount - a.voteCount);
 
   // Login screen
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[#e8edf3]">
-        <div className="w-full max-w-sm">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-t-4 border-[#DC2626]">
-            <div className="p-8">
-              <div className="mb-6">
-                <span className="inline-block px-4 py-1.5 bg-yellow-100 text-[#003DA5] text-xs font-bold tracking-[0.2em] rounded-full border border-yellow-300">
-                  RE/MAX BEST
-                </span>
-              </div>
-              <h1 className="text-2xl font-extrabold text-[#00205B] mb-6">Admin Girişi</h1>
-              <form onSubmit={handleLogin} className="space-y-4">
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: '#e8edf3' }}>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+          <div style={card}>
+            <div style={{ padding: '32px' }}>
+              <div style={{ marginBottom: '24px' }}><span style={badge}>RE/MAX BEST</span></div>
+              <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#00205B', marginBottom: '24px' }}>Admin Girişi</h1>
+              <form onSubmit={handleLogin}>
                 <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Şifre"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#003DA5] focus:outline-none text-sm"
+                  type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Şifre" style={{ ...input, marginBottom: '16px' }}
                 />
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-[#003DA5] text-white font-bold text-sm rounded-xl hover:bg-[#00205B] transition-colors"
-                >
-                  GİRİŞ YAP
-                </button>
+                <button type="submit" style={btnBlue}>GİRİŞ YAP</button>
               </form>
-              {loginError && (
-                <p className="mt-3 text-red-600 text-sm text-center">{loginError}</p>
-              )}
+              {loginError && <p style={{ marginTop: '12px', color: '#DC2626', fontSize: '14px', textAlign: 'center' }}>{loginError}</p>}
             </div>
           </div>
         </div>
@@ -231,7 +192,7 @@ export default function AdminPanel() {
 
   const totalConsultants = consultants.length;
   const votedCount = votes.length;
-  const notVotedCount = totalConsultants - votedCount;
+  const notVotedCount = Math.max(0, totalConsultants - votedCount);
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'dashboard', label: 'Dashboard' },
@@ -241,81 +202,73 @@ export default function AdminPanel() {
     { key: 'results', label: 'Sonuçlar' },
   ];
 
+  const actionBtn = (text: string, onClick: () => void, variant: 'blue' | 'gray' | 'red'): React.ReactNode => {
+    const colors = {
+      blue: { border: '2px solid #003DA5', color: '#003DA5', background: '#fff' },
+      gray: { border: '2px solid #9CA3AF', color: '#6B7280', background: '#fff' },
+      red: { border: 'none', color: '#DC2626', background: '#FEF2F2' },
+    };
+    return (
+      <button onClick={onClick} style={{ padding: '10px 20px', fontWeight: 700, fontSize: '12px', letterSpacing: '0.05em', borderRadius: '20px', cursor: 'pointer', ...colors[variant] }}>
+        {text}
+      </button>
+    );
+  };
+
   return (
-    <div className="min-h-screen p-4 bg-[#e8edf3]">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-t-4 border-[#DC2626]">
-          <div className="p-6 md:p-8">
+    <div style={{ minHeight: '100vh', padding: '16px', background: '#e8edf3' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div style={card}>
+          <div style={{ padding: '32px' }}>
             {/* Header */}
-            <div className="mb-6">
-              <span className="inline-block px-4 py-1.5 bg-yellow-100 text-[#003DA5] text-xs font-bold tracking-[0.2em] rounded-full border border-yellow-300">
-                RE/MAX BEST
-              </span>
-            </div>
+            <div style={{ marginBottom: '24px' }}><span style={badge}>RE/MAX BEST</span></div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              <button
-                onClick={toggleVoting}
-                className="px-5 py-2.5 border-2 border-[#003DA5] text-[#003DA5] font-bold text-xs tracking-wider rounded-full hover:bg-[#003DA5] hover:text-white transition-colors"
-              >
-                OYLAMAYI {votingOpen ? 'KAPAT' : 'AÇ'}
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-5 py-2.5 border-2 border-gray-400 text-gray-600 font-bold text-xs tracking-wider rounded-full hover:bg-gray-100 transition-colors"
-              >
-                ÇIKIŞ YAP
-              </button>
-              <button
-                onClick={resetVotes}
-                className="px-5 py-2.5 text-[#DC2626] font-bold text-xs tracking-wider rounded-full bg-red-50 hover:bg-red-100 transition-colors"
-              >
-                TÜM OYLARI SIFIRLA
-              </button>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
+              {actionBtn(`OYLAMAYI ${votingOpen ? 'KAPAT' : 'AÇ'}`, toggleVoting, 'blue')}
+              {actionBtn('ÇIKIŞ YAP', handleLogout, 'gray')}
+              {actionBtn('TÜM OYLARI SIFIRLA', resetVotes, 'red')}
             </div>
 
             {/* Flash Messages */}
-            {msg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">{msg}</div>}
-            {err && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{err}</div>}
+            {msg && <div style={{ marginBottom: '16px', padding: '12px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', color: '#15803D', fontSize: '14px' }}>{msg}</div>}
+            {err && <div style={{ marginBottom: '16px', padding: '12px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', color: '#DC2626', fontSize: '14px' }}>{err}</div>}
 
             {/* Tabs */}
-            <div className="flex flex-wrap gap-2 mb-8">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '32px' }}>
               {tabs.map(tab => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`px-5 py-2.5 font-bold text-xs tracking-wider rounded-full transition-colors ${
-                    activeTab === tab.key
-                      ? 'bg-[#DC2626] text-white'
-                      : 'bg-[#003DA5] text-white hover:bg-[#00205B]'
-                  }`}
+                  style={{
+                    padding: '10px 20px', fontWeight: 700, fontSize: '12px', letterSpacing: '0.05em',
+                    borderRadius: '20px', border: 'none', cursor: 'pointer', color: '#fff',
+                    background: activeTab === tab.key ? '#DC2626' : '#003DA5',
+                  }}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
 
-            {/* Dashboard Tab */}
+            {/* Dashboard */}
             {activeTab === 'dashboard' && (
               <div>
-                <h2 className="text-2xl font-bold text-[#00205B] mb-6">Dashboard</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="p-5 border-2 border-gray-200 rounded-xl">
-                    <p className="text-sm text-gray-500">Toplam Danışman</p>
-                    <p className="text-3xl font-bold text-[#00205B] mt-1">{totalConsultants}</p>
-                  </div>
-                  <div className="p-5 border-2 border-gray-200 rounded-xl">
-                    <p className="text-sm text-gray-500">Oy Kullanan</p>
-                    <p className="text-3xl font-bold text-green-600 mt-1">{votedCount}</p>
-                  </div>
-                  <div className="p-5 border-2 border-gray-200 rounded-xl">
-                    <p className="text-sm text-gray-500">Oy Kullanmayan</p>
-                    <p className="text-3xl font-bold text-orange-500 mt-1">{notVotedCount < 0 ? 0 : notVotedCount}</p>
-                  </div>
-                  <div className="p-5 border-2 border-gray-200 rounded-xl">
-                    <p className="text-sm text-gray-500">Oylama</p>
-                    <p className={`text-2xl font-bold mt-1 ${votingOpen ? 'text-green-600' : 'text-[#DC2626]'}`}>
+                <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#00205B', marginBottom: '24px' }}>Dashboard</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                  {[
+                    { label: 'Toplam Danışman', value: totalConsultants, color: '#00205B' },
+                    { label: 'Oy Kullanan', value: votedCount, color: '#16A34A' },
+                    { label: 'Oy Kullanmayan', value: notVotedCount, color: '#F97316' },
+                  ].map(item => (
+                    <div key={item.label} style={{ padding: '20px', border: '2px solid #E5E7EB', borderRadius: '12px' }}>
+                      <p style={{ fontSize: '13px', color: '#6B7280' }}>{item.label}</p>
+                      <p style={{ fontSize: '28px', fontWeight: 700, color: item.color, marginTop: '4px' }}>{item.value}</p>
+                    </div>
+                  ))}
+                  <div style={{ padding: '20px', border: '2px solid #E5E7EB', borderRadius: '12px' }}>
+                    <p style={{ fontSize: '13px', color: '#6B7280' }}>Oylama</p>
+                    <p style={{ fontSize: '24px', fontWeight: 700, color: votingOpen ? '#16A34A' : '#DC2626', marginTop: '4px' }}>
                       {votingOpen ? 'AÇIK' : 'KAPALI'}
                     </p>
                   </div>
@@ -323,80 +276,57 @@ export default function AdminPanel() {
               </div>
             )}
 
-            {/* Consultants Tab */}
+            {/* Consultants */}
             {activeTab === 'consultants' && (
               <div>
-                <h2 className="text-2xl font-bold text-[#00205B] mb-6">Danışman Yönetimi</h2>
-                <form onSubmit={addConsultant} className="mb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#00205B', marginBottom: '24px' }}>Danışman Yönetimi</h2>
+                <form onSubmit={addConsultant} style={{ marginBottom: '24px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                     <div>
-                      <label className="block text-sm font-bold text-[#00205B] mb-2">Ad Soyad</label>
-                      <input
-                        type="text"
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        placeholder="AD SOYAD"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#003DA5] focus:outline-none text-sm uppercase"
-                      />
+                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#00205B', marginBottom: '8px' }}>Ad Soyad</label>
+                      <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="AD SOYAD" style={{ ...input, textTransform: 'uppercase' }} />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-[#00205B] mb-2">Cinsiyet</label>
-                      <select
-                        value={newGender}
-                        onChange={(e) => setNewGender(e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#003DA5] focus:outline-none text-sm"
-                      >
+                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#00205B', marginBottom: '8px' }}>Cinsiyet</label>
+                      <select value={newGender} onChange={(e) => setNewGender(e.target.value)} style={{ ...input, background: '#fff', cursor: 'pointer' }}>
                         <option value="ERKEK">ERKEK</option>
                         <option value="KADIN">KADIN</option>
                       </select>
                     </div>
                   </div>
-                  <button
-                    type="submit"
-                    className="w-full py-3 bg-[#003DA5] text-white font-bold text-sm tracking-wider rounded-xl hover:bg-[#00205B] transition-colors"
-                  >
-                    DANIŞMAN EKLE
-                  </button>
+                  <button type="submit" style={btnBlue}>DANIŞMAN EKLE</button>
                 </form>
 
-                {/* Consultant Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr className="text-left text-[#003DA5]">
-                        <th className="pb-3 font-bold">Ad Soyad</th>
-                        <th className="pb-3 font-bold">Cinsiyet</th>
-                        <th className="pb-3 font-bold">Durum</th>
-                        <th className="pb-3 font-bold">Oy</th>
-                        <th className="pb-3 font-bold">İşlem</th>
+                      <tr style={{ textAlign: 'left', color: '#003DA5' }}>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>Ad Soyad</th>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>Cinsiyet</th>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>Durum</th>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>Oy</th>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>İşlem</th>
                       </tr>
                     </thead>
                     <tbody>
                       {consultants.map(c => (
-                        <tr key={c.id} className="border-t border-gray-100">
-                          <td className="py-3">{c.name}</td>
-                          <td className="py-3">
-                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                              c.gender === 'ERKEK' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'
-                            }`}>
+                        <tr key={c.id} style={{ borderTop: '1px solid #F3F4F6' }}>
+                          <td style={{ padding: '12px 0' }}>{c.name}</td>
+                          <td style={{ padding: '12px 0' }}>
+                            <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 700, background: c.gender === 'ERKEK' ? '#DBEAFE' : '#FCE7F3', color: c.gender === 'ERKEK' ? '#1D4ED8' : '#DB2777' }}>
                               {c.gender}
                             </span>
                           </td>
-                          <td className="py-3">
-                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                              c.has_voted ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                            }`}>
+                          <td style={{ padding: '12px 0' }}>
+                            <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 700, background: c.has_voted ? '#DCFCE7' : '#F3F4F6', color: c.has_voted ? '#15803D' : '#6B7280' }}>
                               {c.has_voted ? 'Oy Kullandı' : 'Bekliyor'}
                             </span>
                           </td>
-                          <td className="py-3">
+                          <td style={{ padding: '12px 0' }}>
                             {votes.filter(v => v.male_vote_name === c.name || v.female_vote_name === c.name).length}
                           </td>
-                          <td className="py-3">
-                            <button
-                              onClick={() => deleteConsultant(c.id, c.name)}
-                              className="px-3 py-1 text-xs font-bold text-red-600 hover:bg-red-50 rounded transition-colors"
-                            >
+                          <td style={{ padding: '12px 0' }}>
+                            <button onClick={() => deleteConsultant(c.id, c.name)} style={{ padding: '4px 12px', fontSize: '12px', fontWeight: 700, color: '#DC2626', background: 'transparent', border: 'none', cursor: 'pointer' }}>
                               SİL
                             </button>
                           </td>
@@ -404,146 +334,115 @@ export default function AdminPanel() {
                       ))}
                     </tbody>
                   </table>
-                  {consultants.length === 0 && (
-                    <p className="text-center text-gray-400 py-8">Henüz danışman eklenmemiş</p>
-                  )}
+                  {consultants.length === 0 && <p style={{ textAlign: 'center', color: '#9CA3AF', padding: '32px 0' }}>Henüz danışman eklenmemiş</p>}
                 </div>
               </div>
             )}
 
-            {/* Bulk Add Tab */}
+            {/* Bulk Add */}
             {activeTab === 'bulk' && (
               <div>
-                <h2 className="text-2xl font-bold text-[#00205B] mb-2">Toplu Danışman Ekleme</h2>
-                <p className="text-gray-500 text-sm mb-6">
+                <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#00205B', marginBottom: '8px' }}>Toplu Danışman Ekleme</h2>
+                <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '24px' }}>
                   Her satıra şu formatta yaz: AD SOYAD|ERKEK veya AD SOYAD|KADIN
                 </p>
-                <div>
-                  <label className="block text-sm font-bold text-[#003DA5] mb-2">Toplu Liste</label>
-                  <textarea
-                    value={bulkData}
-                    onChange={(e) => setBulkData(e.target.value)}
-                    placeholder={`İBRAHİM HALİL ÖCAL|ERKEK\nAYŞE DEMİR|KADIN`}
-                    rows={12}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#003DA5] focus:outline-none text-sm font-mono resize-y"
-                  />
-                </div>
-                <button
-                  onClick={handleBulkAdd}
-                  className="w-full mt-4 py-3 bg-[#003DA5] text-white font-bold text-sm tracking-wider rounded-xl hover:bg-[#00205B] transition-colors"
-                >
-                  TOPLU EKLE
-                </button>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#003DA5', marginBottom: '8px' }}>Toplu Liste</label>
+                <textarea
+                  value={bulkData}
+                  onChange={(e) => setBulkData(e.target.value)}
+                  placeholder={`İBRAHİM HALİL ÖCAL|ERKEK\nAYŞE DEMİR|KADIN`}
+                  rows={12}
+                  style={{ ...input, fontFamily: 'monospace', resize: 'vertical', minHeight: '200px' }}
+                />
+                <button onClick={handleBulkAdd} style={{ ...btnBlue, marginTop: '16px' }}>TOPLU EKLE</button>
               </div>
             )}
 
-            {/* Vote Records Tab */}
+            {/* Vote Records */}
             {activeTab === 'votes' && (
               <div>
-                <h2 className="text-2xl font-bold text-[#00205B] mb-6">Oy Kayıtları</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#00205B', marginBottom: '24px' }}>Oy Kayıtları</h2>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr className="text-left text-[#003DA5]">
-                        <th className="pb-3 font-bold">#</th>
-                        <th className="pb-3 font-bold">Oy Veren</th>
-                        <th className="pb-3 font-bold">Beyefendi</th>
-                        <th className="pb-3 font-bold">Hanımefendi</th>
-                        <th className="pb-3 font-bold">Tarih</th>
+                      <tr style={{ textAlign: 'left', color: '#003DA5' }}>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>#</th>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>Oy Veren</th>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>Beyefendi</th>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>Hanımefendi</th>
+                        <th style={{ paddingBottom: '12px', fontWeight: 700 }}>Tarih</th>
                       </tr>
                     </thead>
                     <tbody>
                       {votes.map((v, i) => (
-                        <tr key={v.id} className="border-t border-gray-100">
-                          <td className="py-3 text-gray-400">{i + 1}</td>
-                          <td className="py-3 font-medium">{v.voter_name}</td>
-                          <td className="py-3">{v.male_vote_name}</td>
-                          <td className="py-3">{v.female_vote_name}</td>
-                          <td className="py-3 text-gray-400">
-                            {new Date(v.created_at).toLocaleString('tr-TR')}
-                          </td>
+                        <tr key={v.id} style={{ borderTop: '1px solid #F3F4F6' }}>
+                          <td style={{ padding: '12px 0', color: '#9CA3AF' }}>{i + 1}</td>
+                          <td style={{ padding: '12px 0', fontWeight: 500 }}>{v.voter_name}</td>
+                          <td style={{ padding: '12px 0' }}>{v.male_vote_name}</td>
+                          <td style={{ padding: '12px 0' }}>{v.female_vote_name}</td>
+                          <td style={{ padding: '12px 0', color: '#9CA3AF' }}>{new Date(v.created_at).toLocaleString('tr-TR')}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {votes.length === 0 && (
-                    <p className="text-center text-gray-400 py-8">Henüz oy kullanılmamış</p>
-                  )}
+                  {votes.length === 0 && <p style={{ textAlign: 'center', color: '#9CA3AF', padding: '32px 0' }}>Henüz oy kullanılmamış</p>}
                 </div>
               </div>
             )}
 
-            {/* Results Tab */}
+            {/* Results */}
             {activeTab === 'results' && (
               <div>
-                <h2 className="text-2xl font-bold text-[#00205B] mb-6">Sonuçlar</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Male Results */}
+                <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#00205B', marginBottom: '24px' }}>Sonuçlar</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                  {/* Male */}
                   <div>
-                    <h3 className="text-lg font-bold text-[#003DA5] mb-4">En Şık Beyefendi</h3>
-                    <div className="space-y-3">
-                      {maleResults.map((c, i) => (
-                        <div key={c.id} className="flex items-center gap-3">
-                          <span className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold ${
-                            i === 0 ? 'bg-yellow-400 text-white' :
-                            i === 1 ? 'bg-gray-300 text-white' :
-                            i === 2 ? 'bg-orange-400 text-white' :
-                            'bg-gray-100 text-gray-500'
-                          }`}>
-                            {i + 1}
-                          </span>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-sm font-medium">{c.name}</span>
-                              <span className="text-sm font-bold text-[#003DA5]">{c.voteCount} oy</span>
-                            </div>
-                            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-[#003DA5] rounded-full transition-all"
-                                style={{ width: `${votes.length > 0 ? (c.voteCount / votes.length) * 100 : 0}%` }}
-                              />
-                            </div>
+                    <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#003DA5', marginBottom: '16px' }}>En Şık Beyefendi</h3>
+                    {maleResults.map((c, i) => (
+                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <span style={{
+                          width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          borderRadius: '50%', fontSize: '12px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                          background: i === 0 ? '#EAB308' : i === 1 ? '#9CA3AF' : i === 2 ? '#F97316' : '#E5E7EB',
+                          ...(i > 2 ? { color: '#6B7280' } : {}),
+                        }}>{i + 1}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 500 }}>{c.name}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 700, color: '#003DA5' }}>{c.voteCount} oy</span>
+                          </div>
+                          <div style={{ width: '100%', height: '8px', background: '#F3F4F6', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', background: '#003DA5', borderRadius: '4px', width: `${votes.length > 0 ? (c.voteCount / votes.length) * 100 : 0}%`, transition: 'width 0.3s' }} />
                           </div>
                         </div>
-                      ))}
-                      {maleResults.length === 0 && (
-                        <p className="text-gray-400 text-sm">Henüz sonuç yok</p>
-                      )}
-                    </div>
+                      </div>
+                    ))}
+                    {maleResults.length === 0 && <p style={{ color: '#9CA3AF', fontSize: '14px' }}>Henüz sonuç yok</p>}
                   </div>
 
-                  {/* Female Results */}
+                  {/* Female */}
                   <div>
-                    <h3 className="text-lg font-bold text-[#DC2626] mb-4">En Şık Hanımefendi</h3>
-                    <div className="space-y-3">
-                      {femaleResults.map((c, i) => (
-                        <div key={c.id} className="flex items-center gap-3">
-                          <span className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold ${
-                            i === 0 ? 'bg-yellow-400 text-white' :
-                            i === 1 ? 'bg-gray-300 text-white' :
-                            i === 2 ? 'bg-orange-400 text-white' :
-                            'bg-gray-100 text-gray-500'
-                          }`}>
-                            {i + 1}
-                          </span>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-sm font-medium">{c.name}</span>
-                              <span className="text-sm font-bold text-[#DC2626]">{c.voteCount} oy</span>
-                            </div>
-                            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-[#DC2626] rounded-full transition-all"
-                                style={{ width: `${votes.length > 0 ? (c.voteCount / votes.length) * 100 : 0}%` }}
-                              />
-                            </div>
+                    <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#DC2626', marginBottom: '16px' }}>En Şık Hanımefendi</h3>
+                    {femaleResults.map((c, i) => (
+                      <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <span style={{
+                          width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          borderRadius: '50%', fontSize: '12px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                          background: i === 0 ? '#EAB308' : i === 1 ? '#9CA3AF' : i === 2 ? '#F97316' : '#E5E7EB',
+                          ...(i > 2 ? { color: '#6B7280' } : {}),
+                        }}>{i + 1}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 500 }}>{c.name}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 700, color: '#DC2626' }}>{c.voteCount} oy</span>
+                          </div>
+                          <div style={{ width: '100%', height: '8px', background: '#F3F4F6', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', background: '#DC2626', borderRadius: '4px', width: `${votes.length > 0 ? (c.voteCount / votes.length) * 100 : 0}%`, transition: 'width 0.3s' }} />
                           </div>
                         </div>
-                      ))}
-                      {femaleResults.length === 0 && (
-                        <p className="text-gray-400 text-sm">Henüz sonuç yok</p>
-                      )}
-                    </div>
+                      </div>
+                    ))}
+                    {femaleResults.length === 0 && <p style={{ color: '#9CA3AF', fontSize: '14px' }}>Henüz sonuç yok</p>}
                   </div>
                 </div>
               </div>

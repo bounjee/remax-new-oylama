@@ -17,8 +17,6 @@ export default function VotingPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [votingOpen, setVotingOpen] = useState(false);
-  const [maleSearch, setMaleSearch] = useState('');
-  const [femaleSearch, setFemaleSearch] = useState('');
 
   const fetchData = useCallback(async () => {
     try {
@@ -44,13 +42,6 @@ export default function VotingPage() {
 
   const maleConsultants = consultants.filter(c => c.gender === 'ERKEK');
   const femaleConsultants = consultants.filter(c => c.gender === 'KADIN');
-
-  const filteredMales = maleConsultants.filter(c =>
-    c.name.toLowerCase().includes(maleSearch.toLowerCase())
-  );
-  const filteredFemales = femaleConsultants.filter(c =>
-    c.name.toLowerCase().includes(femaleSearch.toLowerCase())
-  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,8 +72,6 @@ export default function VotingPage() {
         setVoterName('');
         setMaleVoteId('');
         setFemaleVoteId('');
-        setMaleSearch('');
-        setFemaleSearch('');
       } else {
         setError(data.error || 'Bir hata oluştu');
       }
@@ -94,35 +83,35 @@ export default function VotingPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#e8edf3]">
-      <div className="w-full max-w-lg">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-t-4 border-[#DC2626]">
-          <div className="p-8">
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: '#e8edf3' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
+        <div style={{ background: '#fff', borderRadius: '16px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', overflow: 'hidden', borderTop: '4px solid #DC2626' }}>
+          <div style={{ padding: '32px' }}>
             {/* Badge */}
-            <div className="mb-6">
-              <span className="inline-block px-4 py-1.5 bg-yellow-100 text-[#003DA5] text-xs font-bold tracking-[0.2em] rounded-full border border-yellow-300">
+            <div style={{ marginBottom: '24px' }}>
+              <span style={{ display: 'inline-block', padding: '6px 16px', background: '#FEF9C3', color: '#003DA5', fontSize: '11px', fontWeight: 700, letterSpacing: '0.2em', borderRadius: '20px', border: '1px solid #FDE68A' }}>
                 RE/MAX BEST
               </span>
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl font-extrabold text-[#00205B] mb-2">
+            <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#00205B', marginBottom: '8px' }}>
               Şıklık Oylaması
             </h1>
-            <p className="text-gray-500 mb-8 text-sm">
+            <p style={{ color: '#6B7280', marginBottom: '32px', fontSize: '14px' }}>
               En Şık Hanımefendi ve Beyefendiyi Birlikte Seçiyoruz
             </p>
 
             {!votingOpen ? (
-              <div className="text-center py-8">
-                <p className="text-xl font-bold text-[#DC2626]">Oylama Şu Anda Kapalı</p>
-                <p className="text-gray-500 mt-2">Oylama başladığında tekrar ziyaret edin.</p>
+              <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                <p style={{ fontSize: '20px', fontWeight: 700, color: '#DC2626' }}>Oylama Şu Anda Kapalı</p>
+                <p style={{ color: '#6B7280', marginTop: '8px' }}>Oylama başladığında tekrar ziyaret edin.</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit}>
                 {/* Voter Name */}
-                <div>
-                  <label className="block text-sm font-bold text-[#00205B] mb-2">
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#00205B', marginBottom: '8px' }}>
                     Ad Soyad
                   </label>
                   <input
@@ -130,91 +119,55 @@ export default function VotingPage() {
                     value={voterName}
                     onChange={(e) => setVoterName(e.target.value)}
                     placeholder="AD SOYAD"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#003DA5] focus:outline-none transition-colors text-sm uppercase"
+                    style={{ width: '100%', padding: '12px 16px', border: '2px solid #E5E7EB', borderRadius: '12px', fontSize: '14px', outline: 'none', textTransform: 'uppercase', boxSizing: 'border-box' }}
+                    onFocus={(e) => e.target.style.borderColor = '#003DA5'}
+                    onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
                   />
                 </div>
 
                 {/* Male Vote */}
-                <div>
-                  <label className="block text-sm font-bold text-[#00205B] mb-2">
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#00205B', marginBottom: '8px' }}>
                     En Şık Beyefendi
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={maleSearch}
-                      onChange={(e) => {
-                        setMaleSearch(e.target.value);
-                        setMaleVoteId('');
-                      }}
-                      placeholder="Önce ad soyad giriniz"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#003DA5] focus:outline-none transition-colors text-sm"
-                    />
-                    {maleSearch && !maleVoteId && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                        {filteredMales.length > 0 ? filteredMales.map(c => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            onClick={() => {
-                              setMaleVoteId(String(c.id));
-                              setMaleSearch(c.name);
-                            }}
-                            className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm transition-colors"
-                          >
-                            {c.name}
-                          </button>
-                        )) : (
-                          <div className="px-4 py-2 text-sm text-gray-400">Sonuç bulunamadı</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <select
+                    value={maleVoteId}
+                    onChange={(e) => setMaleVoteId(e.target.value)}
+                    style={{ width: '100%', padding: '12px 16px', border: '2px solid #E5E7EB', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+                    onFocus={(e) => e.target.style.borderColor = '#003DA5'}
+                    onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
+                  >
+                    <option value="">Önce ad soyad giriniz</option>
+                    {maleConsultants.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Female Vote */}
-                <div>
-                  <label className="block text-sm font-bold text-[#00205B] mb-2">
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#00205B', marginBottom: '8px' }}>
                     En Şık Hanımefendi
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={femaleSearch}
-                      onChange={(e) => {
-                        setFemaleSearch(e.target.value);
-                        setFemaleVoteId('');
-                      }}
-                      placeholder="Önce ad soyad giriniz"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#003DA5] focus:outline-none transition-colors text-sm"
-                    />
-                    {femaleSearch && !femaleVoteId && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                        {filteredFemales.length > 0 ? filteredFemales.map(c => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            onClick={() => {
-                              setFemaleVoteId(String(c.id));
-                              setFemaleSearch(c.name);
-                            }}
-                            className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm transition-colors"
-                          >
-                            {c.name}
-                          </button>
-                        )) : (
-                          <div className="px-4 py-2 text-sm text-gray-400">Sonuç bulunamadı</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <select
+                    value={femaleVoteId}
+                    onChange={(e) => setFemaleVoteId(e.target.value)}
+                    style={{ width: '100%', padding: '12px 16px', border: '2px solid #E5E7EB', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+                    onFocus={(e) => e.target.style.borderColor = '#003DA5'}
+                    onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
+                  >
+                    <option value="">Önce ad soyad giriniz</option>
+                    {femaleConsultants.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Submit */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-[#003DA5] text-white font-bold text-sm tracking-wider rounded-xl hover:bg-[#00205B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ width: '100%', padding: '14px', background: '#003DA5', color: '#fff', fontWeight: 700, fontSize: '14px', letterSpacing: '0.05em', borderRadius: '12px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1 }}
                 >
                   {loading ? 'GÖNDERİLİYOR...' : 'OYUMU GÖNDER'}
                 </button>
@@ -223,18 +176,18 @@ export default function VotingPage() {
 
             {/* Messages */}
             {message && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm text-center">
+              <div style={{ marginTop: '16px', padding: '12px 16px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', color: '#15803D', fontSize: '14px', textAlign: 'center' }}>
                 {message}
               </div>
             )}
             {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-center">
+              <div style={{ marginTop: '16px', padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', color: '#DC2626', fontSize: '14px', textAlign: 'center' }}>
                 {error}
               </div>
             )}
 
             {/* Footer note */}
-            <p className="mt-6 text-xs text-gray-400 text-center">
+            <p style={{ marginTop: '24px', fontSize: '12px', color: '#9CA3AF', textAlign: 'center' }}>
               Ad soyadınızı yazarsınız, sistem kayıtlı danışman listesinden kontrol eder.
               Adaylar sadece kayıtlı listeden gelir.
             </p>

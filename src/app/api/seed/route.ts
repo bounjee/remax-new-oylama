@@ -6,7 +6,8 @@ export async function GET() {
     await initializeDatabase();
     return NextResponse.json({ message: 'Veritabanı başarıyla oluşturuldu' });
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Seed error:', error);
-    return NextResponse.json({ error: 'Veritabanı oluşturulamadı' }, { status: 500 });
+    return NextResponse.json({ error: 'Veritabanı oluşturulamadı', detail: message }, { status: 500 });
   }
 }

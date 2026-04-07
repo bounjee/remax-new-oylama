@@ -137,7 +137,7 @@ export default function VotingPage() {
                     onFocus={(e) => e.target.style.borderColor = '#003DA5'}
                     onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
                   >
-                    <option value="">Önce ad soyad giriniz</option>
+                    <option value="">Lütfen seçim yapınız</option>
                     {maleConsultants.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
@@ -156,7 +156,7 @@ export default function VotingPage() {
                     onFocus={(e) => e.target.style.borderColor = '#003DA5'}
                     onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
                   >
-                    <option value="">Önce ad soyad giriniz</option>
+                    <option value="">Lütfen seçim yapınız</option>
                     {femaleConsultants.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}

@@ -40,14 +40,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify voter is a registered consultant
-    const upperVoter = voter_name.toUpperCase().trim();
-    const consultant = await sql`SELECT id FROM consultants WHERE UPPER(name) = ${upperVoter}`;
+    const upperVoter = voter_name.toLocaleUpperCase('tr-TR').trim();
+    const consultant = await sql`SELECT id FROM consultants WHERE name = ${upperVoter}`;
     if (consultant.rows.length === 0) {
       return NextResponse.json({ error: 'Kayıtlı danışman bulunamadı. Lütfen ad soyadınızı kontrol edin.' }, { status: 404 });
     }
 
     // Check if already voted
-    const existingVote = await sql`SELECT id FROM votes WHERE UPPER(voter_name) = ${upperVoter}`;
+    const existingVote = await sql`SELECT id FROM votes WHERE voter_name = ${upperVoter}`;
     if (existingVote.rows.length > 0) {
       return NextResponse.json({ error: 'Zaten oy kullandınız' }, { status: 409 });
     }

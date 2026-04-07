@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      const name = parts[0].toUpperCase().trim();
-      const gender = parts[1].toUpperCase().trim();
+      const name = parts[0].toLocaleUpperCase('tr-TR').trim();
+      const gender = parts[1].toLocaleUpperCase('tr-TR').trim();
 
       if (gender !== 'ERKEK' && gender !== 'KADIN') {
         errors.push(`Geçersiz cinsiyet: ${line}`);
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      const existing = await sql`SELECT id FROM consultants WHERE UPPER(name) = ${name}`;
+      const existing = await sql`SELECT id FROM consultants WHERE name = ${name}`;
       if (existing.rows.length > 0) {
         errors.push(`Zaten kayıtlı: ${name}`);
         skipped++;

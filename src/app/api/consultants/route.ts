@@ -48,15 +48,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Ad soyad ve cinsiyet gerekli' }, { status: 400 });
     }
 
-    const upperName = name.toUpperCase().trim();
-    const upperGender = gender.toUpperCase().trim();
+    const upperName = name.toLocaleUpperCase('tr-TR').trim();
+    const upperGender = gender.toLocaleUpperCase('tr-TR').trim();
 
     if (upperGender !== 'ERKEK' && upperGender !== 'KADIN') {
       return NextResponse.json({ error: 'Cinsiyet ERKEK veya KADIN olmalı' }, { status: 400 });
     }
 
     // Check duplicate
-    const existing = await sql`SELECT id FROM consultants WHERE UPPER(name) = ${upperName}`;
+    const existing = await sql`SELECT id FROM consultants WHERE name = ${upperName}`;
     if (existing.rows.length > 0) {
       return NextResponse.json({ error: 'Bu danışman zaten kayıtlı' }, { status: 409 });
     }
